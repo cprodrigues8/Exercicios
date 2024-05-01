@@ -36,12 +36,13 @@ def order_players():
     return player_order
 
 #funções do jogo
-def round(player_order,board): 
+def round(player_order:list[dict[str,str|int]],board): 
     #cada round é constituido de 3 fases para cada player
     for player in player_order:
 
         #1 - parte que joga o dado e move o jogador pra casa 
         dice_roll=random.randrange(1,7,1) #tem que ser 7 pq nao inclui o valor de limite, desta forma gera os valores de 1 à 6
+        #random.randint() poderia usar esta para incluir o valor limite tambem
         if player['Posicao']+dice_roll>(casas-1): #precisa da condição casas-1 pq são 20 casas mas a ultima casa é a 19
            player['Posicao']+=(dice_roll-casas)
            player['Volta']+=1
@@ -50,14 +51,16 @@ def round(player_order,board):
            player['Posicao']+=dice_roll 
         
         #2 - parte que checa ação do player na casa de chegada
+        #landing_site=board[player['Posicao']] ## proposta do eiti
         landing_site_owner=board[player['Posicao']]['Dono']
         landing_site_rent=board[player['Posicao']]['Aluguel']
         landing_site_value=board[player['Posicao']]['Preco']
 
-        if landing_site_owner== 'banco': #se esta numa casa sem dono
+        if landing_site_owner == 'banco': #se esta numa casa sem dono
             if player['Estrategia']=='Impulsive':
                 if player['Saldo']>=landing_site_value: #impulsivo compra sempre que tem dinheiro
                     #landing_site_owner=player['Estrategia'] #aqui tentei usar a var landing_site_owner, mas daí nao atualizava a lista da board, achei que tratia o p1,p2,p3,p4
+                    #landing_site['Dono']=player['Estrategia']  ## proposta do eiti
                     board[player['Posicao']]['Dono']=player['Estrategia'] 
                     player['Saldo']-=landing_site_value
             elif player['Estrategia']=='Demanding':     
@@ -138,8 +141,29 @@ def run_simulations(simulations):
             if x['Winner']==a:
                 win_count[a]+=1
 
-    best_strat=max(zip(win_count.values(), win_count.keys()))[1] #nao entendi o uso dessa função, copiei da net
+    #i
+    # best_strat=max(zip(win_count.values(), win_count.keys()))[1] #nao entendi o uso dessa função, copiei da net
+    #troquei pelo codigo de noob abaixo
+        # a=('a','b'=2,'c','d')
+        # b=(1,2,3,4)
     
+        # c = (('a', 1), ('b', 1), ('c', 3)) #mais ou menos oq o zip faz
+
+    max=0
+    best_strat=''
+    for x in win_count: 
+        if max<win_count[x]:
+            max=win_count[x]
+            best_strat=x   
+
+    #outra forma ainda de fazer
+    # max=0
+    # best_strat=''
+    # for x,y in win_count.items(): 
+    #     if max<y:
+    #         max=y
+    #         best_strat=x 
+
     print(f"Jogos com timeout: {timeouts}")
     print(f"Média de turnos por jogo: {total_rounds/simulations}")
     for chave, valor in win_count.items():
@@ -147,3 +171,9 @@ def run_simulations(simulations):
     print(f"A melhor estratégia de jogo foi: {best_strat}")
 
 run_simulations(1000)
+
+#fazer mandraque de colocar a estratégia numa variavel de player_name
+#fazer a troca parcial do landing_site no lugar de landing site owner
+#colocar tie breaker para best strat
+#colocar um tie breaker no ordenador de jogadores
+#incluir tipagens como na linha 39
